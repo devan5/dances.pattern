@@ -7,9 +7,6 @@
 	<script type="text/javascript" src="../../dances.amd/dances.amd.js"></script>
 	<script type="text/javascript" src="../../dances.path.js"></script>
 
-	<!-- 被测试js -->
-	<script type="text/javascript" src="../dances.klass.js"></script>
-
 	<!-- 定义路径 -->
 	<link rel="stylesheet" type="text/css" href="../../_helper/jasmine/lib/1.3.1/jasmine.css" media="all">
 	<script type="text/javascript" src="../../_helper/jasmine/lib/1.3.1/jasmine.js"></script>
@@ -31,14 +28,17 @@
 
 			var currentWindowOnload = window.onload;
 
+/*
 			window.onload = function(){
 				if(currentWindowOnload){
 					currentWindowOnload();
 				}
 				execJasmine();
 			};
+*/
 
-			function execJasmine(){
+
+			window.execJasmine = function(){
 				jasmineEnv.execute();
 			}
 
@@ -50,147 +50,226 @@
 
 	<!-- spec代码 -->
 	<script type="text/javascript">
-		describe("dances.klass", function(){
+		define.amd.dancesKlass = true;
 
-			it("basic", function(){
+		require
+			.conf("baseUrl", "../../")
+			(["dKlass"], function(){
 
-				var
-					parent,
-					newClass
-				;
+			describe("dances.klass", function(){
 
-				parent = function(){
+				it("basic", function(){
 
-				};
+					var
+						parent,
+						newClass
+					;
 
-				newClass = new Klass(parent, function(){
-					this.hello = 5;
+					parent = function(){
+
+					};
+
+					newClass = new Klass(parent, function(){
+						this.hello = 5;
+					});
+
+					expect(new newClass instanceof newClass).toEqual(true);
+					expect(new newClass instanceof parent).toEqual(true);
+					expect((new newClass).hello).toEqual(5);
+					expect((new newClass).hasOwnProperty("hello")).toEqual(true);
+					expect(newClass.hasOwnProperty("extend")).toEqual(true);
+					expect(newClass.hasOwnProperty("implement")).toEqual(true);
+					expect(newClass.hasOwnProperty("mix")).toEqual(true);
+
 				});
 
-				expect(new newClass instanceof newClass).toEqual(true);
-				expect(new newClass instanceof parent).toEqual(true);
-				expect((new newClass).hello).toEqual(5);
-				expect((new newClass).hasOwnProperty("hello")).toEqual(true);
-				expect(newClass.hasOwnProperty("extend")).toEqual(true);
-				expect(newClass.hasOwnProperty("implement")).toEqual(true);
-				expect(newClass.hasOwnProperty("mix")).toEqual(true);
+				it("两种语法", function(){
+					var
+						newClass1,
+						newClass2
+					;
 
-			});
-
-			it("两种语法", function(){
-				var
-					newClass1,
-					newClass2
-				;
-
-				newClass1 = new Klass(function(){
-					this.a = "a";
-				});
-
-				newClass2 = dances.klass(function(){
-					this.a = "a";
-				});
-				expect((new newClass1).a).toEqual("a");
-				expect((new newClass2).a).toEqual("a");
-
-				newClass1 = new Klass({
-					$constructor: function(){
+					newClass1 = new Klass(function(){
 						this.a = "a";
-					},
-					b: "b"
-				});
+					});
 
-				newClass2 = dances.klass({
-					$constructor: function(){
+					newClass2 = dances.klass(function(){
 						this.a = "a";
-					},
-					b: "b"
+					});
+					expect((new newClass1).a).toEqual("a");
+					expect((new newClass2).a).toEqual("a");
+					newClass1 = new Klass({
+						$constructor: function(){
+							this.a = "a";
+						},
+						b: "b"
+					});
+
+					newClass2 = dances.klass({
+						$constructor: function(){
+							this.a = "a";
+						},
+						b: "b"
+					});
+
+					expect((new newClass1).a).toEqual("a");
+					expect((new newClass1).b).toEqual("b");
+					expect((new newClass1).hasOwnProperty("a")).toEqual(true);
+					expect((new newClass1).hasOwnProperty("b")).toEqual(false);
+
+					expect((new newClass2).a).toEqual("a");
+					expect((new newClass2).b).toEqual("b");
+					expect((new newClass2).hasOwnProperty("a")).toEqual(true);
+					expect((new newClass2).hasOwnProperty("b")).toEqual(false);
+
 				});
 
-				expect((new newClass1).a).toEqual("a");
-				expect((new newClass1).b).toEqual("b");
-				expect((new newClass1).hasOwnProperty("a")).toEqual(true);
-				expect((new newClass1).hasOwnProperty("b")).toEqual(false);
+				it("非继承", function(){
+					var
+						Person,
+						person
+					;
 
-				expect((new newClass2).a).toEqual("a");
-				expect((new newClass2).b).toEqual("b");
-				expect((new newClass2).hasOwnProperty("a")).toEqual(true);
-				expect((new newClass2).hasOwnProperty("b")).toEqual(false);
+					Person = dances.klass({
+						$constructor: function(name){
+							this.name = name;
+						},
+
+						behaviour: ["eat", "sleep"]
+
+					});
+
+					person = new Person("devan");
+
+					expect(person.hasOwnProperty("behaviour")).toEqual(false);
+					expect(person.hasOwnProperty("name")).toEqual(true);
+
+				});
+
+				it("继承", function(){
+					var
+						Person,
+						Csser,
+						Feder
+					;
+
+					Person = dances.klass({
+						$constructor: function(name){
+							this.nAme = name;
+						},
+
+						behaviour: ["eat", "sleep"]
+
+					});
+
+					Csser = dances.klass(Person, function(){
+						this.majorJob = "css";
+
+					});
+
+					Feder = dances.klass(true, Person, {
+						$constructor: function(){
+							this.majorJob = ["javascript", "css"];
+						}
+					});
+
+					expect(new Csser instanceof Person).toEqual(true);
+					expect(new Feder instanceof Person).toEqual(true);
+					expect(new Csser("v").nAme).toEqual(undefined);
+					expect(new Feder("devan5").nAme).toEqual("devan5");
+
+
+				});
+
+				describe("测试 newClass 方法", function(){
+					it(".extend()", function(){
+
+						var Mobile;
+						Mobile = dances.klass(function(){
+
+						})
+						.extend("build", function(){
+							return "build";
+						});
+
+						expect((new Mobile).build).toEqual(undefined);
+						expect(Mobile.build()).toEqual("build");
+
+					});
+
+					it(".implement()", function(){
+						var Mobile;
+						Mobile = dances.klass(function(){
+
+						})
+						.implement("calling", function(){
+							return "calling";
+						});
+
+						expect((new Mobile).calling()).toEqual("calling");
+						expect(Mobile.calling).toEqual(undefined);
+
+					});
+
+					it(".mix()", function(){
+						var
+							Person,
+							Feder,
+							Csser,
+							UIer,
+
+							Geek,
+							inst
+						;
+
+						Person = new Klass(function(name){
+							this.name = name;
+						});
+
+						Feder = new Klass(Person, {
+							majorJob: "FED",
+
+							codeJs: function(){
+								return "codingJs";
+							}
+
+						});
+
+						Csser = new Klass(Person, {
+							majorJob: "css",
+
+							renderHTML: function(){
+								return "html";
+							}
+
+						});
+
+						UIer = new Klass(Person, {
+							majorJob: "design",
+
+							design: function(){
+								return "design..";
+							}
+						});
+
+
+						Geek = new Klass({
+							$mix: [Feder, Csser, UIer]
+						});
+
+						inst = new Geek;
+						expect(inst.codeJs()).toEqual("codingJs");
+						expect(inst.codeJs()).toEqual("codingJs");
+						expect(inst.design()).toEqual("design..");
+
+					});
+				});
 
 			});
 
-			it("非继承", function(){
-				var
-					Person,
-					person
-				;
-
-				Person = dances.klass({
-					$constructor: function(name){
-						this.name = name;
-					},
-
-					behaviour: ["eat", "sleep"]
-
-				});
-
-				person = new Person("devan");
-
-				expect(person.hasOwnProperty("behaviour")).toEqual(false);
-				expect(person.hasOwnProperty("name")).toEqual(true);
-
-			});
-
-			it("继承", function(){
-				var
-					Person,
-					Csser,
-					Feder
-				;
-
-				Person = dances.klass({
-					$constructor: function(name){
-						this.nAme = name;
-					},
-
-					behaviour: ["eat", "sleep"]
-
-				});
-
-				Csser = dances.klass(Person, function(){
-					this.majorJob = "css";
-
-				});
-
-				Feder = dances.klass(true, Person, {
-					$constructor: function(){
-						this.majorJob = ["javascript", "css"];
-					}
-				});
-
-				expect(new Csser instanceof Person).toEqual(true);
-				expect(new Feder instanceof Person).toEqual(true);
-				expect(new Csser("v").nAme).toEqual(undefined);
-				expect(new Feder("devan5").nAme).toEqual("devan5");
-
-
-			});
-
-			describe("测试 newClass 方法", function(){
-				it(".extend()", function(){
-
-				});
-
-				it(".extend()", function(){
-
-				});
-
-				it(".mix()", function(){
-
-				});
-			});
-
+			execJasmine();
 		});
+
 	</script>
 
 </body>

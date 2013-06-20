@@ -40,9 +40,11 @@
 
 + opts(Obj)
 		
-	* $constructor
+	* $constructor(Fn)
+	构造函数
 		
-	* $mix	
+	* $mix(Arr)	
+	混入类
 
 #### klass.method
 新类的方法.  

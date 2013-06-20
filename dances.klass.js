@@ -1,5 +1,5 @@
 /*_______
-with dances
+with dances.pattern
 
 	called: klass
 
@@ -7,7 +7,7 @@ with dances
 
 	firstDate: 2013.06.19
 
-	lastDate: 2013.06.19
+	lastDate: 2013.06.21
 
 	require: [
 		""
@@ -27,13 +27,29 @@ with dances
 
 _______*/
 
+/*
+	// 所谓的 圣杯模式
+	var inherit = (function(){
+		var Foo = function(){};
+		return function(Child, Parent){
+			Foo.prototype = Parent.prototype;
+			Child.prototype = new F();
+			Child.$parent = Parent.prototype;
+			Child.prototype.constructor = Child;
+		};
+	})();
+*/
+
 (function(dances, undefined){
 	
 	var
 		Klass,
 
 		fExtend,
-		fMix,
+
+		extend,
+		implement,
+		mix,
 
 		uc = function(fn){
 			return function(){
@@ -70,6 +86,64 @@ _______*/
 
 	};
 
+	extend = function(){
+		var args = slice(arguments);
+
+		args[0] && fExtend.apply(this, args);
+
+		// gc
+		args = null;
+
+		return this;
+
+	};
+
+	mix = function(){
+		var
+			args = slice(arguments),
+			props,
+			proto,
+
+			i,
+			len = args.length,
+			item
+		;
+
+		"string" === typeof args[args.length - 1] && (props = args.pop() + ",");
+
+		proto = this.prototype;
+
+		for(i = 0; i < len; i++){
+			item = args[i];
+			"function" === typeof item && (item = item.prototype);
+
+			for(var prop in item){
+				if(item.hasOwnProperty(prop) && (!props || props.indexOf(prop + ",") > -1) && !proto.hasOwnProperty(prop)){
+					proto[prop] = item[prop];
+				}
+			}
+
+		}
+
+		// gc
+		item = proto = args = null;
+
+		return this;
+
+	};
+
+	implement = function(){
+		var args = slice(arguments);
+
+		args[0] && fExtend.apply(this.prototype, args);
+
+		// gc
+		args = null;
+
+		return this;
+
+	};
+
 	Klass = {
 		pseudo: function(){},
 
@@ -77,7 +151,6 @@ _______*/
 			var
 				klass,
 
-				// !gc
 				parent,
 				constructor,
 
@@ -90,35 +163,41 @@ _______*/
 			parent = args.pop();
 
 			// 支持 父类的原型对象
-			if("[object Object]" === toSting(parent) && "function" === typeof parent.constructor){
+			if(parent && "[object Object]" === toSting(parent) && "function" === typeof parent.constructor){
 				parent = parent.constructor;
 			}
 
 			bCallInParent = "function" === typeof parent && args.pop();
 
-			if("[object Object]" === toSting(constructor) && "function" === typeof constructor.constructor){
+			if(constructor && "[object Object]" === toSting(constructor) && "function" === typeof constructor.constructor){
 				props = constructor;
 				constructor = props.$constructor;
 				delete props.$constructor;
-
-			}else if("function" !== typeof constructor){
-				$$log("expect constructor as least", "error");
-				return "";
 			}
 
 			"function" === typeof parent || (parent = null);
+			"function" === typeof constructor || (constructor = null);
 
-			(!parent || !bCallInParent) && (klass = function(){
-				constructor.apply(this, arguments);
+			constructor || (klass = function(){});
 
-			});
+			if((!parent || !bCallInParent) && constructor){
+				 klass = (function(constructor){
+					return function(){
+					 constructor.apply(this, arguments);
+					}
+				})(constructor);
+			}
 
 			if(parent){
 
-				bCallInParent && (klass = function(){
-					parent.apply(this, arguments);
-					constructor.apply(this, arguments);
-				});
+				if(bCallInParent && constructor){
+					klass = (function(parent, constructor){
+						return function(){
+							parent.apply(this, arguments);
+							constructor.apply(this, arguments);
+						}
+					})(parent, constructor);
+				}
 
 				this.inherit(klass, parent);
 			}
@@ -132,10 +211,17 @@ _______*/
 				}
 			}
 
-			this.extend(klass);
+
+			// 装配
+			klass.extend = extend;
+			klass.implement = implement;
+			klass.mix = mix;
+
+			// mix?
+			props && props.$mix && klass.mix.apply(klass, props.$mix);
 
 			// gc
-			args = props = null;
+			parent = constructor = args = props = null;
 
 			return klass;
 
@@ -149,70 +235,6 @@ _______*/
 			this.pseudo.prototype = parent.prototype;
 			klass.prototype = new this.pseudo();
 			klass.prototype.constructor = klass;
-
-		},
-
-		// 装配方法
-		extend : function(klass){
-
-			klass.extend = function(){
-				var args = slice(arguments);
-
-				args[0] && fExtend.apply(this, args);
-
-				// gc
-				args = null;
-
-				return this;
-
-			};
-
-			klass.implement = function(){
-				var args = slice(arguments);
-
-				args[0] && fExtend.apply(this.prototype, args);
-
-				// gc
-				args = null;
-
-				return this;
-
-			};
-
-			klass.mix = function(){
-				var
-					args = slice(arguments),
-					props,
-					proto,
-
-					i,
-					len = args.length,
-					item
-					;
-
-				"string" === typeof args[args.length - 1] && (props = args.pop() + ",");
-
-				proto = this.prototype;
-
-				for(i = 0; i < len; i++){
-					item = args[i];
-
-					for(var prop in item){
-						"function" === typeof item && (item = item.prototype);
-						if(item.hasOwnProperty(prop) && (!props || props.indexOf(prop + ",") > -1) && !proto.hasOwnProperty(prop)){
-							proto[prop] = item[prop];
-						}
-					}
-
-				}
-
-				// gc
-				item = proto = args = null;
-
-				return this;
-			};
-
-			klass = null;
 
 		}
 
@@ -228,5 +250,9 @@ _______*/
 	window.Klass = function(){
 		return klass.apply(null, arguments);
 	};
-	
+
+	"function" === typeof window.define && define.amd && define.amd.dancesKlass && define(function(){
+		return klass;
+	});
+
 })(window.dances);
