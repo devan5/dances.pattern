@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>dances.klass</title>
+
+	<script type="text/javascript" src="../../dances.amd/dances.amd.js"></script>
+	<script type="text/javascript" src="../../dances.path.js"></script>
+
+	<!-- 被测试js -->
+	<script type="text/javascript" src="../dances.klass.js"></script>
+
+	<!-- 定义路径 -->
+	<link rel="stylesheet" type="text/css" href="../../_helper/jasmine/lib/1.3.1/jasmine.css" media="all">
+	<script type="text/javascript" src="../../_helper/jasmine/lib/1.3.1/jasmine.js"></script>
+	<script type="text/javascript" src="../../_helper/jasmine/lib/1.3.1/jasmine-html.js"></script>
+
+	<script type="text/javascript">
+		(function(){
+			var jasmineEnv = jasmine.getEnv();
+			jasmineEnv.updateInterval = 1000;
+
+			var htmlReporter = new jasmine.HtmlReporter();
+//			var htmlReporter = new jasmine.TrivialReporter();
+
+			jasmineEnv.addReporter(htmlReporter);
+
+			jasmineEnv.specFilter = function(spec){
+				return htmlReporter.specFilter(spec);
+			};
+
+			var currentWindowOnload = window.onload;
+
+			window.onload = function(){
+				if(currentWindowOnload){
+					currentWindowOnload();
+				}
+				execJasmine();
+			};
+
+			function execJasmine(){
+				jasmineEnv.execute();
+			}
+
+		})();
+	</script>
+
+</head>
+<body>
+
+	<!-- spec代码 -->
+	<script type="text/javascript">
+		describe("dances.klass", function(){
+			it("basic", function(){
+
+				var
+					parent,
+					inst
+					;
+
+				parent = function(){
+
+				};
+
+				inst = new Klass(parent, function(){
+
+				});
+
+				expect(new inst instanceof inst).toEqual(true);
+				expect(new inst instanceof parent).toEqual(true);
+
+			});
+		});
+	</script>
+
+</body>
+</html>
+
