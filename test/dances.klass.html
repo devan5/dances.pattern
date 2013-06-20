@@ -51,25 +51,145 @@
 	<!-- spec代码 -->
 	<script type="text/javascript">
 		describe("dances.klass", function(){
+
 			it("basic", function(){
 
 				var
 					parent,
-					inst
-					;
+					newClass
+				;
 
 				parent = function(){
 
 				};
 
-				inst = new Klass(parent, function(){
+				newClass = new Klass(parent, function(){
+					this.hello = 5;
+				});
+
+				expect(new newClass instanceof newClass).toEqual(true);
+				expect(new newClass instanceof parent).toEqual(true);
+				expect((new newClass).hello).toEqual(5);
+				expect((new newClass).hasOwnProperty("hello")).toEqual(true);
+				expect(newClass.hasOwnProperty("extend")).toEqual(true);
+				expect(newClass.hasOwnProperty("implement")).toEqual(true);
+				expect(newClass.hasOwnProperty("mix")).toEqual(true);
+
+			});
+
+			it("两种语法", function(){
+				var
+					newClass1,
+					newClass2
+				;
+
+				newClass1 = new Klass(function(){
+					this.a = "a";
+				});
+
+				newClass2 = dances.klass(function(){
+					this.a = "a";
+				});
+				expect((new newClass1).a).toEqual("a");
+				expect((new newClass2).a).toEqual("a");
+
+				newClass1 = new Klass({
+					$constructor: function(){
+						this.a = "a";
+					},
+					b: "b"
+				});
+
+				newClass2 = dances.klass({
+					$constructor: function(){
+						this.a = "a";
+					},
+					b: "b"
+				});
+
+				expect((new newClass1).a).toEqual("a");
+				expect((new newClass1).b).toEqual("b");
+				expect((new newClass1).hasOwnProperty("a")).toEqual(true);
+				expect((new newClass1).hasOwnProperty("b")).toEqual(false);
+
+				expect((new newClass2).a).toEqual("a");
+				expect((new newClass2).b).toEqual("b");
+				expect((new newClass2).hasOwnProperty("a")).toEqual(true);
+				expect((new newClass2).hasOwnProperty("b")).toEqual(false);
+
+			});
+
+			it("非继承", function(){
+				var
+					Person,
+					person
+				;
+
+				Person = dances.klass({
+					$constructor: function(name){
+						this.name = name;
+					},
+
+					behaviour: ["eat", "sleep"]
 
 				});
 
-				expect(new inst instanceof inst).toEqual(true);
-				expect(new inst instanceof parent).toEqual(true);
+				person = new Person("devan");
+
+				expect(person.hasOwnProperty("behaviour")).toEqual(false);
+				expect(person.hasOwnProperty("name")).toEqual(true);
 
 			});
+
+			it("继承", function(){
+				var
+					Person,
+					Csser,
+					Feder
+				;
+
+				Person = dances.klass({
+					$constructor: function(name){
+						this.nAme = name;
+					},
+
+					behaviour: ["eat", "sleep"]
+
+				});
+
+				Csser = dances.klass(Person, function(){
+					this.majorJob = "css";
+
+				});
+
+				Feder = dances.klass(true, Person, {
+					$constructor: function(){
+						this.majorJob = ["javascript", "css"];
+					}
+				});
+
+				expect(new Csser instanceof Person).toEqual(true);
+				expect(new Feder instanceof Person).toEqual(true);
+				expect(new Csser("v").nAme).toEqual(undefined);
+				expect(new Feder("devan5").nAme).toEqual("devan5");
+
+
+			});
+
+			describe("测试 newClass 方法", function(){
+				it(".extend()", function(){
+
+				});
+
+				it(".extend()", function(){
+
+				});
+
+				it(".mix()", function(){
+
+				});
+			});
+
 		});
 	</script>
 

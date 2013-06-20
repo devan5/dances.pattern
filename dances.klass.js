@@ -80,7 +80,6 @@ _______*/
 				// !gc
 				parent,
 				constructor,
-				parentArgs,
 
 				args = slice(arguments),
 				props,
@@ -95,12 +94,12 @@ _______*/
 				parent = parent.constructor;
 			}
 
-			bCallInParent = "function" === typeof parent;
+			bCallInParent = "function" === typeof parent && args.pop();
 
 			if("[object Object]" === toSting(constructor) && "function" === typeof constructor.constructor){
 				props = constructor;
-				constructor = props.constructor;
-				delete props.constructor;
+				constructor = props.$constructor;
+				delete props.$constructor;
 
 			}else if("function" !== typeof constructor){
 				$$log("expect constructor as least", "error");
@@ -116,21 +115,10 @@ _______*/
 
 			if(parent){
 
-				// parentArgs
-				if(bCallInParent){
-
-					if(props && props.parentArgs){
-						"[object Array]" !== toSting(props.parentArgs) && (props.parentArgs = [props.parentArgs]);
-						parentArgs = props.parentArgs;
-					}else{
-						parentArgs = [];
-					}
-
-					klass = function(){
-						parent.apply(this, parentArgs);
-						constructor.apply(this, arguments);
-					};
-				}
+				bCallInParent && (klass = function(){
+					parent.apply(this, arguments);
+					constructor.apply(this, arguments);
+				});
 
 				this.inherit(klass, parent);
 			}
@@ -138,7 +126,7 @@ _______*/
 			// 扩展原型对象
 			if(props){
 				for(var prop in props){
-					if(props.hasOwnProperty(prop) && this.filters.indexOf(prop + ",") > -1){
+					if(props.hasOwnProperty(prop) && this.filters.indexOf(prop + ",") === -1){
 						klass.prototype[prop] = props[prop];
 					}
 				}
@@ -153,10 +141,10 @@ _______*/
 
 		},
 
-		filters: "$parentArgs,$constructor,",
+		filters: "$constructor,$mix,",
 
 		// 继承
-		inherit  : function(klass, parent){
+		inherit: function(klass, parent){
 
 			this.pseudo.prototype = parent.prototype;
 			klass.prototype = new this.pseudo();
@@ -164,8 +152,8 @@ _______*/
 
 		},
 
-		// 配置方法
-		extend   : function(klass){
+		// 装配方法
+		extend : function(klass){
 
 			klass.extend = function(){
 				var args = slice(arguments);
@@ -200,7 +188,7 @@ _______*/
 					i,
 					len = args.length,
 					item
-				;
+					;
 
 				"string" === typeof args[args.length - 1] && (props = args.pop() + ",");
 

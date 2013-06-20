@@ -39,8 +39,6 @@
 构造函数, 用于实例化类.
 
 + opts(Obj)
-	* $parentArgs(单列 || 数组形式)
-	可选, 传入父类构造函数的参数
 		
 	* $constructor
 		
@@ -73,7 +71,9 @@
 	筛选属性, 以逗号隔开  
 
 
-### dances.interface 
+### dances.interface
+
+#### craft 
 	var iCar = dances.interface("car", ["start", "break"]);
 	var iSuperCar = dances.interface("superCar", ["fly"]);
 
