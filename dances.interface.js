@@ -103,7 +103,6 @@ _______*/
 
 		implements: function(checked){
 			var
-				sName = this.$getName(),
 				arr = this.$getMethods(),
 
 				len = arr.length - 1,
@@ -112,10 +111,13 @@ _______*/
 
 			do{
 				sMethod = arr[len];
-				if(!checked.hasOwnProperty(sMethod)){
-					throw new Error("Interface Error: instance does not implement the [" + sName + "] interface. Method [" + sMethod + "] was not found.");
+				if(!checked.hasOwnProperty(sMethod) || "function" !== typeof checked[sMethod]){
+					throw new Error("Interface Error: instance does not implement the [" + this.$getName() + "] interface. Method [" + sMethod + "] was not found.");
 				}
 			}while(len--);
+
+			// gc
+			sMethod = arr = null;
 
 			return true;
 
@@ -134,17 +136,25 @@ _______*/
 			args = slice(arguments),
 			checked = args.shift(),
 
-			itemI,
+			face,
 			len = args.length - 1
 		;
 
 		do{
-			itemI = args[len];
-			itemI.implements(checked);
+			face = args[len];
+
+			if(Face.isPrototypeOf(face)){
+				face.implements(checked);
+			}else{
+				throw new Error("Interface.implements expect Interface instance");
+			}
+
 		}while(len--);
 
-		return true;
+		// gc
+		checked = face = args = null;
 
+		return true;
 	};
 
 	"function" === typeof window.define && define.amd && define.amd.dancesInterface && define(function(){
@@ -152,96 +162,3 @@ _______*/
 	});
 
 })(window.dances);
-
- (function(){
-	 return;
-
-	Interface = dances.klass(null, {
-		_init: function(sInterNme, arrM){
-			var len = arrM.length,
-				item
-			;
-
-			this.name = sInterNme;
-			this.method = [];
-
-			while(len--){
-				item = arrM[len];
-				if("string" !== typeof item){
-					throw "Interface constructor expects method names to be passed in as a string";
-				}
-				this.method.push(item);
-			}
-
-			// gc
-			item = null;
-		},
-
-		implements: function(inst){
-			if(inst === null){
-				throw "Interface.prototype.implements expects instance object";
-			}
-			var aMethod = this.method,
-				len = aMethod.length,
-				method
-			;
-
-			while(len--){
-				method = aMethod[len];
-				if(!inst[method] || "function" !== typeof inst[method]){
-					throw "instance does not implement the [" + this.name + "] interface. Method [" + method + "] was not found.";
-				}
-			}
-
-			return this;
-		}
-
-	});
-
-	exports = function(sName, aM){
-		if(!sName || !aM || "string" !== typeof sName || !dances.type.isArrLike(aM)){
-			throw "Interface constructor called with 2 arguments: a string and a array";
-		}
-		return new Interface(sName, aM);
-	};
-
-	exports.implements = function(){
-		var arg = Array.prototype.slice.call(arguments,0),
-			inst,
-
-			iNum,
-			iFace,
-
-			num,
-			method
-		;
-		inst = arg.shift();
-
-		if(inst === null || "object" !== typeof inst){
-			throw new SyntaxError("Interface.implements expect instance object");
-		}
-
-		if(0 === arg.length){
-			throw new SyntaxError("Interface.implements expect Interface instance at last one");
-		}
-
-		iNum = arg.length;
-		while(iNum--){
-			iFace = arg[iNum];
-			if(iFace instanceof Interface){
-				num = iFace.method.length;
-				while(num--){
-					method = iFace.method[num];
-					if(!inst[method] || "function" !== typeof inst[method]){
-						throw new Error("Interface Error: instance does not implement the [" + iFace.name + "] interface. Method [" + method + "] was not found.");
-					}
-				}
-			}else{
-				throw "Interface.implements expect Interface instance";
-			}
-		}
-
-	};
-
-	return exports;
- })();
