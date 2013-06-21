@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>interface.js</title>
+
+	<script type="text/javascript" src="../../dances.amd/dances.amd.js"></script>
+	<script type="text/javascript" src="../../dances.path.js"></script>
+
+	<!-- 被测试js -->
+	<script type="text/javascript" src="../dances.interface.js"></script>
+
+	<!-- 定义路径 -->
+	<link rel="stylesheet" type="text/css" href="../../_helper/jasmine/lib/1.3.1/jasmine.css" media="all">
+	<script type="text/javascript" src="../../_helper/jasmine/lib/1.3.1/jasmine.js"></script>
+	<script type="text/javascript" src="../../_helper/jasmine/lib/1.3.1/jasmine-html.js"></script>
+
+	<script type="text/javascript">
+		(function(){
+			var jasmineEnv = jasmine.getEnv();
+			jasmineEnv.updateInterval = 1000;
+
+			var htmlReporter = new jasmine.HtmlReporter();
+//			var htmlReporter = new jasmine.TrivialReporter();
+
+			jasmineEnv.addReporter(htmlReporter);
+
+			jasmineEnv.specFilter = function(spec){
+				return htmlReporter.specFilter(spec);
+			};
+
+			var currentWindowOnload = window.onload;
+
+/*
+			window.onload = function(){
+				if(currentWindowOnload){
+					currentWindowOnload();
+				}
+				execJasmine();
+			};
+*/
+
+			window.execJasmine = function (){
+				jasmineEnv.execute();
+			}
+
+		})();
+	</script>
+
+</head>
+<body>
+
+<!-- spec代码 -->
+<script type="text/javascript">
+	define.amd.dancesInterface = true;
+	require
+		.conf("baseUrl","../../")
+		(["dInterface"], function(_){
+			describe("dances.interface", function(){
+				it("basic", function(){
+					var
+						IFed
+					;
+
+					IFed = _("IFed", ["html", "css", "js"]);
+
+					var person = {
+						html: function(){},
+						css: function(){},
+						js: function(){}
+					};
+
+					expect(IFed.implements(person)).toEqual(true);
+					expect(_.implements(person, IFed)).toEqual(true);
+
+				});
+
+				it("多重接口", function(){
+					var
+						ILive,
+						IFed
+					;
+
+					ILive = _("Alive", ["eat", "sleep"]);
+					IFed = _("FED", ["javascript"]);
+
+					var person = {
+						eat       : function(){},
+						sleep     : function(){},
+						javascript: function(){}
+					};
+
+					expect(_.implements(person, ILive, IFed)).toEqual(true);
+
+				});
+
+				describe("cause error", function(){
+
+				});
+
+			});
+			execJasmine();
+		})
+	;
+
+	0 && describe("interface",function(){
+		it("TestUnit",function(){
+
+			(function(){
+				var Iobject =  dances.interface("Iobject",["height","weight"]);
+				var Iman =  dances.interface("Iman",["think","dance","drive"]);
+				var inst;
+				inst = Object.create({
+					height:function(){},
+					think:function(){},
+					drive:function(){},
+					dance:function(){}
+				});
+				$log(
+					inst.hasOwnProperty("drive")
+				);
+				Iobject.implements({
+					height:function(){},
+					weight:function(){}
+				});
+
+				$log(
+					dances.interface.implements(inst, Iobject, Iman)
+				)
+			})();
+		});
+	});
+
+</script>
+</body>
+</html>

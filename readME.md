@@ -74,6 +74,26 @@
 
 
 ### dances.interface
+#### syntax
+	dances.interface(interfaceName, implementMethod);
+	dances.interface.implements(obj, interfaceInstance[, interfaceInstance]);
+
+#### return
+	interfaceInstance.
+
+#### param
++ interfaceName(Str)
+	用于显示__提示__, 哪一 interface 没有按需求实现. 
+
++ implementMethod(Arr)
+	实现的方法名集群.
+
++ interfaceInstance
+	dances.interface() 的实例
+
+#### interfaceInstance.method
++ implements(Obj)
+	返回 布尔值, 检测这个对象是否符合接口.
 
 #### craft 
 	var iCar = dances.interface("car", ["start", "break"]);
