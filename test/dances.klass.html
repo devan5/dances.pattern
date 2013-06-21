@@ -58,29 +58,70 @@
 
 			describe("dances.klass", function(){
 
-				it("basic", function(){
+				describe("测试重载", function(){
 
-					var
-						parent,
-						newClass
-					;
+					it("basic", function(){
 
-					parent = function(){
+						var
+							parent,
+							newClass
+						;
 
-					};
+						parent = function(){
 
-					newClass = new Klass(parent, function(){
-						this.hello = 5;
+						};
+
+						newClass = new Klass(parent, function(){
+							this.hello = 5;
+						});
+
+						var newInst = new newClass;
+
+						expect(newInst instanceof newClass).toEqual(true);
+						expect(newInst instanceof parent).toEqual(true);
+						expect(newInst.hello).toEqual(5);
+						expect(newInst.hasOwnProperty("hello")).toEqual(true);
+
+						expect(newClass.hasOwnProperty("extend")).toEqual(true);
+						expect(newClass.hasOwnProperty("implement")).toEqual(true);
+						expect(newClass.hasOwnProperty("mix")).toEqual(true);
+
 					});
 
-					expect(new newClass instanceof newClass).toEqual(true);
-					expect(new newClass instanceof parent).toEqual(true);
-					expect((new newClass).hello).toEqual(5);
-					expect((new newClass).hasOwnProperty("hello")).toEqual(true);
-					expect(newClass.hasOwnProperty("extend")).toEqual(true);
-					expect(newClass.hasOwnProperty("implement")).toEqual(true);
-					expect(newClass.hasOwnProperty("mix")).toEqual(true);
+					it("空构造函数", function(){
+						var
+							Box,
+							LoginBox
+						;
 
+						Box = dances.klass({
+							show: function(){
+								return "show..";
+							},
+
+							hide: function(){
+								return "hide..";
+							}
+						});
+
+						expect((new Box).show()).toEqual("show..");
+						expect((new Box).hide()).toEqual("hide..");
+
+						LoginBox = dances.klass(Box ,{
+							validUser: function(){
+								return "validing...";
+							}
+						});
+
+						var loginBox = new LoginBox;
+						expect(loginBox.show()).toEqual("show..");
+						expect(loginBox.hide()).toEqual("hide..");
+						expect(loginBox.validUser()).toEqual("validing...");
+						expect(loginBox.hasOwnProperty("show")).toEqual(false);
+						expect(loginBox.hasOwnProperty("hide")).toEqual(false);
+						expect(loginBox.hasOwnProperty("validing")).toEqual(false);
+
+					});
 				});
 
 				it("两种语法", function(){
@@ -146,70 +187,193 @@
 
 				});
 
-				it("继承", function(){
-					var
-						Person,
-						Csser,
-						Feder
-					;
+				describe("继承", function(){
+					it("basic 继承", function(){
+						var
+							Person,
+							Csser,
+							Feder
+						;
 
-					Person = dances.klass({
-						$constructor: function(name){
-							this.nAme = name;
-						},
+						Person = dances.klass({
+							$constructor: function(name){
+								this.nAme = name;
+							},
 
-						behaviour: ["eat", "sleep"]
+							behaviour: ["eat", "sleep"]
+
+						});
+
+						Csser = dances.klass(Person, function(){
+							this.majorJob = "css";
+
+						});
+
+						Feder = dances.klass(true, Person, {
+							$constructor: function(){
+								this.majorJob = ["javascript", "css"];
+							}
+						});
+
+						expect(new Csser instanceof Person).toEqual(true);
+						expect(new Feder instanceof Person).toEqual(true);
+						expect(new Csser("v").nAme).toEqual(undefined);
+						expect(new Feder("devan5").nAme).toEqual("devan5");
+
 
 					});
 
-					Csser = dances.klass(Person, function(){
-						this.majorJob = "css";
+					it("多重继承", function(){
+						var
+							Life,
+							Animal,
+							Mammal,
+							Person
+						;
+
+						Life = dances.klass({
+							birth: function(){
+								this.alive = true;
+								return "function" === typeof this._birth && this._birth();
+							},
+
+							dead: function(){
+								this.alive = false;
+								return this;
+							}
+						});
+
+						Animal = dances.klass(Life, {
+							eat: function(){
+								return "supply energy";
+							},
+
+							rest: function(){
+								return "take a rest!";
+							}
+						});
+
+						Mammal = dances.klass(Animal, {
+							Viviparous : true,
+							warnBlooded: true,
+
+							breast: function(child){
+								return "breast child" + child.name;
+							}
+						});
+
+						Person = dances.klass(Mammal, {
+
+							_birth: function(){
+								return "A human called " + this.name + " was coming..";
+							},
+
+							$constructor: function(name){
+								this.name = name;
+							},
+
+							read: function(book){
+								return "read the "+ book || "books";
+							},
+
+							research: function(obj){
+								return "return" + obj;
+							}
+						});
+
+						var animal = new Animal();
+						expect(animal.eat()).toEqual("supply energy");
+						expect("Viviparous" in animal).toEqual(false);
+						expect("read" in animal).toEqual(false);
+
+						var person = new Person("devan5");
+
+						expect(person.hasOwnProperty("name")).toEqual(true);
+						expect(person.birth()).toEqual("A human called devan5 was coming..");
+						expect(person.warnBlooded).toEqual(true);
+						expect(person.read("javascript mvc")).toEqual("read the javascript mvc");
+						expect(person.rest()).toEqual("take a rest!");
 
 					});
-
-					Feder = dances.klass(true, Person, {
-						$constructor: function(){
-							this.majorJob = ["javascript", "css"];
-						}
-					});
-
-					expect(new Csser instanceof Person).toEqual(true);
-					expect(new Feder instanceof Person).toEqual(true);
-					expect(new Csser("v").nAme).toEqual(undefined);
-					expect(new Feder("devan5").nAme).toEqual("devan5");
-
-
 				});
 
 				describe("测试 newClass 方法", function(){
-					it(".extend()", function(){
+					describe(".extend()", function(){
+						it("basic", function(){
 
-						var Mobile;
-						Mobile = dances.klass(function(){
+							var Mobile;
+							Mobile = dances.klass(function(){
 
-						})
-						.extend("build", function(){
-							return "build";
+							})
+							.extend("build", function(){
+								return "build";
+							});
+
+							expect((new Mobile).build).toEqual(undefined);
+							expect(Mobile.build()).toEqual("build");
+
 						});
 
-						expect((new Mobile).build).toEqual(undefined);
-						expect(Mobile.build()).toEqual("build");
+						it("2nd syntax", function(){
+
+							var Mobile;
+							Mobile = dances.klass()
+							.extend({
+								build: function(){
+									return "build";
+								},
+
+								create: function(){
+									return "create..";
+								}
+							});
+
+							expect((new Mobile).build).toEqual(undefined);
+							expect(Mobile.build()).toEqual("build");
+							expect(Mobile.create()).toEqual("create..");
+
+						});
 
 					});
 
-					it(".implement()", function(){
-						var Mobile;
-						Mobile = dances.klass(function(){
+					describe(".implement()", function(){
+						it(".implement()", function(){
+							var Mobile;
+							Mobile = dances.klass(function(){
 
-						})
-						.implement("calling", function(){
-							return "calling";
+							})
+							.implement("calling", function(){
+								return "calling";
+							});
+
+							expect((new Mobile).calling()).toEqual("calling");
+							expect(Mobile.calling).toEqual(undefined);
+
 						});
 
-						expect((new Mobile).calling()).toEqual("calling");
-						expect(Mobile.calling).toEqual(undefined);
+						it("2nd syntax", function(){
+							var Mobile;
+							Mobile = dances.klass(function(brand){
+								this.brand = brand;
+							})
+							.implement({
+								calling: function(){
+									return "calling";
+								},
 
+								purpose: "make connection more easier"
+							});
+
+							var mobile = new Mobile("nokia");
+							expect(Mobile.calling).toEqual(undefined);
+							expect(mobile.calling()).toEqual("calling");
+							expect(mobile.purpose).toEqual("make connection more easier");
+							expect(mobile.hasOwnProperty("brand")).toEqual(true);
+							expect(mobile.hasOwnProperty("purpose")).toEqual(false);
+
+						});
 					});
+
 
 					it(".mix()", function(){
 						var
@@ -239,7 +403,7 @@
 							majorJob: "css",
 
 							renderHTML: function(){
-								return "html";
+								return "html..";
 							}
 
 						});
@@ -259,8 +423,35 @@
 
 						inst = new Geek;
 						expect(inst.codeJs()).toEqual("codingJs");
-						expect(inst.codeJs()).toEqual("codingJs");
+						expect(inst.renderHTML()).toEqual("html..");
 						expect(inst.design()).toEqual("design..");
+
+						expect(inst.hasOwnProperty("codeJs")).toEqual(false);
+						expect(inst.hasOwnProperty("renderHTML")).toEqual(false);
+						expect(inst.hasOwnProperty("design")).toEqual(false);
+
+					});
+
+					it(".getParent()", function(){
+						var
+							Car,
+							SpeedCar
+						;
+
+						Car = dances.klass({
+							drive: function(){
+								return "speed 50 km/h";
+							}
+						});
+
+						SpeedCar = dances.klass(Car, {
+							$constructor: function(){
+								return "speed 150 km/h";
+							}
+						});
+
+						expect(Car.getParent()).toEqual(null);
+						expect(SpeedCar.getParent()).toEqual(Car);
 
 					});
 				});

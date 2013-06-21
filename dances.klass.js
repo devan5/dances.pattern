@@ -149,9 +149,9 @@ _______*/
 
 		create: function(){
 			var
-				klass,
+				Klass,
 
-				parent,
+				Parent,
 				constructor,
 
 				args = slice(arguments),
@@ -160,81 +160,86 @@ _______*/
 			;
 
 			constructor = args.pop();
-			parent = args.pop();
+			Parent = args.pop();
 
 			// 支持 父类的原型对象
-			if(parent && "[object Object]" === toSting(parent) && "function" === typeof parent.constructor){
-				parent = parent.constructor;
+			if(Parent && "[object Object]" === toSting(Parent) && "function" === typeof Parent.constructor){
+				Parent = Parent.constructor;
 			}
 
-			bCallInParent = "function" === typeof parent && args.pop();
+			bCallInParent = "function" === typeof Parent && args.pop();
 
+			// 重载
 			if(constructor && "[object Object]" === toSting(constructor) && "function" === typeof constructor.constructor){
 				props = constructor;
 				constructor = props.$constructor;
 				delete props.$constructor;
 			}
 
-			"function" === typeof parent || (parent = null);
+			"function" === typeof Parent || (Parent = null);
 			"function" === typeof constructor || (constructor = null);
 
-			constructor || (klass = function(){});
-
-			if((!parent || !bCallInParent) && constructor){
-				 klass = (function(constructor){
-					return function(){
-					 constructor.apply(this, arguments);
-					}
-				})(constructor);
-			}
-
-			if(parent){
-
-				if(bCallInParent && constructor){
-					klass = (function(parent, constructor){
+			// 装配构造函数
+			Klass = constructor ?
+				Parent && bCallInParent ?
+					(function(Parent, constructor){
 						return function(){
-							parent.apply(this, arguments);
+							Parent.apply(this, arguments);
+							constructor.apply(this, arguments);
+						};
+					})(Parent, constructor)
+					:
+					(function(constructor){
+						return function(){
 							constructor.apply(this, arguments);
 						}
-					})(parent, constructor);
-				}
+					})(constructor)
+				:
+				function(){}
+			;
 
-				this.inherit(klass, parent);
-			}
+			// 继承
+			Parent && this.inherit(Klass, Parent);
 
 			// 扩展原型对象
 			if(props){
 				for(var prop in props){
 					if(props.hasOwnProperty(prop) && this.filters.indexOf(prop + ",") === -1){
-						klass.prototype[prop] = props[prop];
+						Klass.prototype[prop] = props[prop];
 					}
 				}
 			}
 
-
 			// 装配
-			klass.extend = extend;
-			klass.implement = implement;
-			klass.mix = mix;
+			Klass.extend = extend;
+			Klass.implement = implement;
+			Klass.mix = mix;
+			Klass.getParent = (function(Parent){
+				return function(){ return Parent };
+			})(Parent || null);
 
 			// mix?
-			props && props.$mix && klass.mix.apply(klass, props.$mix);
+			props && props.$mix && Klass.mix.apply(Klass, props.$mix);
 
 			// gc
-			parent = constructor = args = props = null;
+			Parent = constructor = args = props = null;
 
-			return klass;
+			return Klass;
 
 		},
 
 		filters: "$constructor,$mix,",
 
 		// 继承
-		inherit: function(klass, parent){
+		inherit: function(Klass, Parent){
 
-			this.pseudo.prototype = parent.prototype;
-			klass.prototype = new this.pseudo();
-			klass.prototype.constructor = klass;
+			this.pseudo.prototype = Parent.prototype;
+			Klass.prototype = new this.pseudo();
+			Klass.prototype.constructor = Klass;
+
+			Klass.$parent = Parent.prototype;
+
+			Klass = Parent = null;
 
 		}
 
