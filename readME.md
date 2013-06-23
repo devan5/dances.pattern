@@ -1,23 +1,38 @@
 # dances.pattern
 专注于 javascript 设计模式
 
+javascript 编程经验以一定高度的模式集合封装.
+
 ## 包含模块
 + dances.observe
 + dances.klass
 + dances.interface
 
+
++ dances.promise
+
++ dances.queue
+
++ dances.effect
+
 ### dances.observe
 
-#### craft
-	var evt = dances.observe();
+#### syntax
+	dances.observe();
 
-	// 第一阶段
-	evt.subscribe("eventName", eventFn);
-	evt.unsubscribe("eventName", eventFn);
-	evt.publish("eventName", eventFn);
+#### return
+[observer] instance.
 
-	// 第二阶段
-	增加, 事件名空间
+#### instance.method
+
++ .add(name || name.namespace, fn);
+添加一个订阅
+
++ .erase(name || name.space[, fn])
+取消一个订阅
+
++ .fire(name || name.namespace)
+发布一个订阅
 
 ### dances.klass
 

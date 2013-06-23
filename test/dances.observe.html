@@ -5,7 +5,8 @@
 	<title>dances.observe</title>
 
 	<!-- 被测试js -->
-	<script type="text/javascript" src="../dances.observe.js"></script>
+	<script type="text/javascript" src="../../dances.amd/dances.amd.js"></script>
+	<script type="text/javascript" src="../../dances.path.js"></script>
 
 	<!-- 定义路径 -->
 	<link rel="stylesheet" type="text/css" href="../../_helper/jasmine/lib/1.3.1/jasmine.css" media="all">
@@ -28,14 +29,16 @@
 
 			var currentWindowOnload = window.onload;
 
+/*
 			window.onload = function(){
 				if(currentWindowOnload){
 					currentWindowOnload();
 				}
 				execJasmine();
 			};
+*/
 
-			function execJasmine(){
+			window.execJasmine = function (){
 				jasmineEnv.execute();
 			}
 
@@ -47,6 +50,25 @@
 
 	<!-- spec代码 -->
 	<script type="text/javascript">
+		define.amd.dancesObserve = true;
+
+		require
+			.conf("baseUrl", "../../")
+			(["dObserve"], function(_){
+
+				var watcher = _();
+				var watcher2 = _();
+				watcher.add("fly", function(){
+					$log("fly...");
+				});
+				watcher.fire("fly");
+				watcher2.add("fly", function(){
+					$log("fly2...");
+				});
+				watcher2.fire("fly");
+			})
+		;
+
 		describe("Test",function(){
 			it("TestUnit",function(){
 				expect("ok").toEqual("ok");
