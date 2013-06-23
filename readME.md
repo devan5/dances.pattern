@@ -9,11 +9,15 @@
 ### dances.observe
 
 #### craft
-	var inst = dances.observe();
+	var evt = dances.observe();
 
-	inst.subscribe("eventName", eventFn);
-	inst.unsubscribe("eventName", eventFn);
-	inst.publish("eventName", eventFn);
+	// 第一阶段
+	evt.subscribe("eventName", eventFn);
+	evt.unsubscribe("eventName", eventFn);
+	evt.publish("eventName", eventFn);
+
+	// 第二阶段
+	增加, 事件名空间
 
 ### dances.klass
 

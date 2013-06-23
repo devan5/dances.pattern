@@ -111,8 +111,8 @@ _______*/
 
 			do{
 				sMethod = arr[len];
-				if(!checked.hasOwnProperty(sMethod) || "function" !== typeof checked[sMethod]){
-					throw new Error("Interface Error: instance does not implement the [" + this.$getName() + "] interface. Method [" + sMethod + "] was not found.");
+				if("function" !== typeof checked[sMethod]){
+					throw new Error("Interface Error: instance does not implement the [" + this.$getName() + "] interface. The method [" + sMethod + "] was not found.");
 				}
 			}while(len--);
 
@@ -156,6 +156,8 @@ _______*/
 
 		return true;
 	};
+
+	dances.interface = face;
 
 	"function" === typeof window.define && define.amd && define.amd.dancesInterface && define(function(){
 		return face;

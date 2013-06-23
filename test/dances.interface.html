@@ -94,42 +94,58 @@
 
 				});
 
-				describe("cause error", function(){
+				it("cause error", function(){
+					var
+						IBox,
+						IMan
+					;
+
+					IBox = dances.interface("IBox", ["height", "weight"]);
+					IMan = dances.interface("IMan", ["think", "dance", "drive"]);
+
+					var
+						box,
+						person
+					;
+
+					box = {
+						width : function(){},
+						height: function(){}
+					};
+
+					person = {
+						think : function(){},
+						dance: function(){},
+						drive : function(){}
+					};
+
+					var
+						boxFail,
+						personFail
+					;
+					try{
+						IBox.implements(box);
+					}catch(e) {
+						boxFail = true;
+					}
+
+					try{
+						IMan.implements(person);
+					}catch(e) {
+						personFail = false;
+					}
+
+					expect(boxFail).toBe(true);
+					expect(personFail).toBe(undefined);
+
 
 				});
 
 			});
+
 			execJasmine();
 		})
 	;
-
-	0 && describe("interface",function(){
-		it("TestUnit",function(){
-
-			(function(){
-				var Iobject =  dances.interface("Iobject",["height","weight"]);
-				var Iman =  dances.interface("Iman",["think","dance","drive"]);
-				var inst;
-				inst = Object.create({
-					height:function(){},
-					think:function(){},
-					drive:function(){},
-					dance:function(){}
-				});
-				$log(
-					inst.hasOwnProperty("drive")
-				);
-				Iobject.implements({
-					height:function(){},
-					weight:function(){}
-				});
-
-				$log(
-					dances.interface.implements(inst, Iobject, Iman)
-				)
-			})();
-		});
-	});
 
 </script>
 </body>
